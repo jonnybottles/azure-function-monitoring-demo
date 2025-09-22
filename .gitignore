@@ -61,3 +61,7 @@ load-test.jmx
 
 # Azure CLI cache
 .azure/
+
+
+# Terraform lock file (environment specific)
+.terraform.lock.hcl

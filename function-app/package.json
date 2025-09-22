@@ -1,0 +1,11 @@
+{
+  "name": "function-app-monitor",
+  "version": "1.0.0",
+  "description": "Azure Function App with App Service Hosting",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

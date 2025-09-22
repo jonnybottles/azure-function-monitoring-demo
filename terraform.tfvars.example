@@ -1,0 +1,26 @@
+# Azure Function App Monitoring Demo - Configuration Variables (TEMPLATE)
+# Copy this file to terraform.tfvars and fill in your own values
+
+# Core Project Settings
+project_name = "function-monitor"
+
+# Azure region where all resources will be deployed
+location = "<your-region>"
+
+# Email address to receive monitoring alerts
+alert_email = "<your-email@domain.com>"
+
+# App Service Plan Configuration
+app_service_plan_sku = "P1v2"
+
+# Alert Threshold Configuration
+alert_thresholds = {
+  data_in_bytes     = 1
+  response_time_sec = 2
+  memory_percent    = 80
+  http_errors_count = 10
+}
+
+# Auto-scaling Configuration
+autoscale_min_instances = 1
+autoscale_max_instances = 10

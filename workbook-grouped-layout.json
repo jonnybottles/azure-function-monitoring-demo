@@ -1,0 +1,382 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Function App Performance Dashboard\nMonitoring key metrics for App Service hosted Function App"
+      },
+      "name": "text - 0"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "Instance Details & Autoscaling Activity",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "// Shows simplified instance information\nrequests\n| where timestamp > ago(30m)\n| extend InstanceNumber = extract(@\"([0-9a-f]{8})\", 1, cloud_RoleInstance)\n| summarize \n    RequestCount = count(), \n    AvgDuration = avg(duration),\n    FirstSeen = min(timestamp),\n    LastSeen = max(timestamp)\n    by InstanceNumber = strcat(\"Instance-\", substring(InstanceNumber, 0, 8))\n| order by RequestCount desc\n| project \n    Instance = InstanceNumber, \n    ['Requests'] = RequestCount, \n    ['Avg Duration (ms)'] = round(AvgDuration, 2),\n    ['Active For'] = format_timespan(LastSeen - FirstSeen, 'h:m')",
+              "size": 0,
+              "title": "Current Active Instances (Last 30 min)",
+              "timeContext": {
+                "durationMs": 1800000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "Requests",
+                    "formatter": 4,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  },
+                  {
+                    "columnMatch": "Avg Duration",
+                    "formatter": 0,
+                    "numberFormat": {
+                      "unit": 23,
+                      "options": {
+                        "style": "decimal",
+                        "maximumFractionDigits": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "customWidth": "50",
+            "showPin": false,
+            "name": "current-instances-table",
+            "styleSettings": {
+              "margin": "5px",
+              "padding": "10px",
+              "showBorder": true
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "// Instance count summary\nrequests\n| where timestamp > ago(1h)\n| summarize by cloud_RoleInstance, bin(timestamp, 5m)\n| summarize InstanceCount = dcount(cloud_RoleInstance) by timestamp\n| summarize \n    CurrentInstances = max(InstanceCount),\n    MinInstances = min(InstanceCount),\n    MaxInstances = max(InstanceCount),\n    AvgInstances = round(avg(InstanceCount), 1)\n| project \n    Metric = \"Instance Statistics\",\n    Current = CurrentInstances,\n    ['Min (1hr)'] = MinInstances,\n    ['Max (1hr)'] = MaxInstances,\n    ['Avg (1hr)'] = AvgInstances",
+              "size": 0,
+              "title": "Instance Count Summary",
+              "timeContext": {
+                "durationMs": 3600000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "Current",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": ">=",
+                          "thresholdValue": "1",
+                          "representation": "green",
+                          "text": "{0}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "gray",
+                          "text": "{0}"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "customWidth": "50",
+            "showPin": false,
+            "name": "instance-summary",
+            "styleSettings": {
+              "margin": "5px",
+              "padding": "10px",
+              "showBorder": true
+            }
+          }
+        ]
+      },
+      "name": "instance-details-group"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "<hr style='margin: 20px 0; border: 0; border-top: 2px solid #e0e0e0;'/>"
+      },
+      "name": "divider-1"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "Request Metrics",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "requests\n| where timestamp > ago(1h)\n| summarize count() by bin(timestamp, 5m)\n| render timechart",
+              "size": 0,
+              "title": "Requests Over Time",
+              "timeContext": {
+                "durationMs": 3600000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components"
+            },
+            "customWidth": "50",
+            "showPin": false,
+            "name": "requests-over-time",
+            "styleSettings": {
+              "margin": "5px",
+              "padding": "10px",
+              "showBorder": true
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "requests\n| where timestamp > ago(1h)\n| summarize avg(duration) by bin(timestamp, 5m)\n| render timechart",
+              "size": 0,
+              "title": "Average Response Time",
+              "timeContext": {
+                "durationMs": 3600000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components"
+            },
+            "customWidth": "50",
+            "showPin": false,
+            "name": "avg-response-time",
+            "styleSettings": {
+              "margin": "5px",
+              "padding": "10px",
+              "showBorder": true
+            }
+          }
+        ]
+      },
+      "name": "request-metrics-group"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "<hr style='margin: 20px 0; border: 0; border-top: 2px solid #e0e0e0;'/>"
+      },
+      "name": "divider-2"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "Success & Error Analysis",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "requests\n| where timestamp > ago(1h)\n| summarize Success = countif(success == true), Failed = countif(success == false) by bin(timestamp, 5m)\n| render timechart",
+              "size": 0,
+              "title": "Success vs Failed Requests",
+              "timeContext": {
+                "durationMs": 3600000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components"
+            },
+            "customWidth": "50",
+            "showPin": false,
+            "name": "success-vs-failed",
+            "styleSettings": {
+              "margin": "5px",
+              "padding": "10px",
+              "showBorder": true
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "requests\n| where timestamp > ago(1h)\n| summarize count() by resultCode\n| render piechart",
+              "size": 0,
+              "title": "Response Codes Distribution",
+              "timeContext": {
+                "durationMs": 3600000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components"
+            },
+            "customWidth": "50",
+            "showPin": false,
+            "name": "response-codes",
+            "styleSettings": {
+              "margin": "5px",
+              "padding": "10px",
+              "showBorder": true
+            }
+          }
+        ]
+      },
+      "name": "success-error-group"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "<hr style='margin: 20px 0; border: 0; border-top: 2px solid #e0e0e0;'/>"
+      },
+      "name": "divider-3"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "Scaling & Instance Metrics",
+        "items": [
+          {
+            "type": 10,
+            "content": {
+              "chartId": "cpu-percentage-metric",
+              "version": "MetricsItem/2.0",
+              "size": 0,
+              "chartType": 2,
+              "resourceType": "microsoft.web/serverfarms",
+              "metricScope": 0,
+              "resourceIds": [
+                "${app_service_plan_id}"
+              ],
+              "timeContext": {
+                "durationMs": 3600000
+              },
+              "metrics": [
+                {
+                  "namespace": "microsoft.web/serverfarms",
+                  "metric": "microsoft.web/serverfarms--CpuPercentage",
+                  "aggregation": 4
+                }
+              ],
+              "title": "App Service Plan CPU %",
+              "gridSettings": {
+                "rowLimit": 10000
+              }
+            },
+            "customWidth": "50",
+            "showPin": false,
+            "name": "app-service-plan-cpu",
+            "styleSettings": {
+              "margin": "5px",
+              "padding": "10px",
+              "showBorder": true
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "requests\n| where timestamp > ago(1h)\n| summarize ActiveInstances = dcount(cloud_RoleInstance) by bin(timestamp, 5m)\n| render timechart",
+              "size": 0,
+              "title": "Active Instance Count (Autoscale)",
+              "timeContext": {
+                "durationMs": 3600000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components"
+            },
+            "customWidth": "50",
+            "showPin": false,
+            "name": "instance-count",
+            "styleSettings": {
+              "margin": "5px",
+              "padding": "10px",
+              "showBorder": true
+            }
+          }
+        ]
+      },
+      "name": "scaling-instance-group"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "<hr style='margin: 20px 0; border: 0; border-top: 2px solid #e0e0e0;'/>"
+      },
+      "name": "divider-4"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "System Performance",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "performanceCounters\n| where timestamp > ago(1h)\n| where category == \"Process\" and counter == \"% Processor Time\"\n| summarize avg(value) by bin(timestamp, 5m)\n| render timechart",
+              "size": 0,
+              "title": "CPU Usage Over Time",
+              "timeContext": {
+                "durationMs": 3600000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components"
+            },
+            "customWidth": "50",
+            "showPin": false,
+            "name": "cpu-usage",
+            "styleSettings": {
+              "margin": "5px",
+              "padding": "10px",
+              "showBorder": true
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "performanceCounters\n| where timestamp > ago(1h)\n| where category == \"Memory\" and counter == \"Available Bytes\"\n| summarize avg(value) by bin(timestamp, 5m)\n| render timechart",
+              "size": 0,
+              "title": "Available Memory Over Time",
+              "timeContext": {
+                "durationMs": 3600000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components"
+            },
+            "customWidth": "50",
+            "showPin": false,
+            "name": "memory-usage",
+            "styleSettings": {
+              "margin": "5px",
+              "padding": "10px",
+              "showBorder": true
+            }
+          }
+        ]
+      },
+      "name": "system-performance-group"
+    }
+  ],
+  "fallbackResourceIds": [
+    "${app_insights_id}"
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
