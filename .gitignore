@@ -65,3 +65,5 @@ load-test.jmx
 
 # Terraform lock file (environment specific)
 .terraform.lock.hcl
+
+.vscode
