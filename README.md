@@ -144,12 +144,11 @@ The project includes comprehensive Azure Load Testing setup:
 #### Load Test Execution
 
 ```powershell
-# Create and run a simple load test
+# Create and run a load test (includes server-side metrics configuration)
 ./create-simple-load-test.ps1
-
-# Configure advanced server-side metrics
-./configure-load-test-metrics.ps1
 ```
+
+**Note**: The `create-simple-load-test.ps1` script automatically configures all server-side metrics (Application Insights and App Service Plan) through the YAML configuration file.
 
 #### Generated Test Files
 - `load-test.jmx`: JMeter script with parameterized function URL
@@ -177,8 +176,7 @@ This generates traffic to test autoscaling and monitor through the workbook dash
 ├── deploy-function-code-template.ps1    # Function deployment template
 ├── load-test.jmx.tpl                    # JMeter script template
 ├── load-test-config.yaml.tpl            # Azure Load Testing configuration template
-├── create-simple-load-test.ps1          # Script to create Azure Load Tests
-├── configure-load-test-metrics.ps1      # Script to configure server-side metrics
+├── create-simple-load-test.ps1          # Script to create Azure Load Tests (includes metrics)
 ├── terraform.tfvars.example             # Configuration template
 ├── .gitignore                           # Comprehensive ignore rules
 ├── README.md                            # This documentation
