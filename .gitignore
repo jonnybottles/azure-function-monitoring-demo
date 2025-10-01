@@ -67,3 +67,5 @@ load-test.jmx
 .terraform.lock.hcl
 
 .vscode/
+
+deploy-function-code.ps1
